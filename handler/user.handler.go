@@ -68,3 +68,28 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 
 	return helpers.SuccessResponse(ctx, 200, userResponse)
 }
+
+func UserHandlerUpdateById(ctx *fiber.Ctx) error {
+	var userRequest request.UserUpdateRequest
+
+	if err := ctx.BodyParser(userRequest); err != nil {
+		return helpers.ErrorResponse(ctx, 400, err.Error())
+	}
+
+	userId := ctx.Params("id")
+
+	var user entity.User
+	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+		return helpers.ErrorResponse(ctx, 404, "Not found")
+	}
+
+	if err := database.DB.Model(&user).Updates(entity.User{
+		Name:    userRequest.Name,
+		Address: userRequest.Address,
+		Phone:   userRequest.Phone,
+	}).Error; err != nil {
+		return helpers.ErrorResponse(ctx, 500, err.Error())
+	}
+
+	return helpers.SuccessResponse(ctx, 200, user)
+}
