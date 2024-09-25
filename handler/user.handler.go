@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 func UserHandlerGetAll(ctx *fiber.Ctx) error {
@@ -131,6 +132,25 @@ func UserHandlerUpdateEmail(ctx *fiber.Ctx) error {
 
 	if err := database.DB.Model(&user).Update("email", userRequest.Email).Error; err != nil {
 		return helpers.ErrorResponse(ctx, 500, err.Error())
+	}
+
+	return helpers.SuccessResponse(ctx, 200, user)
+}
+
+func UserHandlerDeleteUserById(ctx *fiber.Ctx) error {
+	userId := ctx.Params("id")
+
+	var user entity.User
+
+	if err := database.DB.First(&user, userId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return helpers.ErrorResponse(ctx, 404, "User not found")
+		}
+		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
+	}
+
+	if err := database.DB.Delete(&user).Error; err != nil {
+		return helpers.ErrorResponse(ctx, 500, "Failed to delete user")
 	}
 
 	return helpers.SuccessResponse(ctx, 200, user)
