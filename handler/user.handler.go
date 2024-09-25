@@ -66,7 +66,10 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 	var user entity.User
 
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
-		return helpers.ErrorResponse(ctx, 404, "Not found")
+		if err == gorm.ErrRecordNotFound {
+			return helpers.ErrorResponse(ctx, 404, "User not found")
+		}
+		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
 	}
 
 	userResponse := response.UserResponseById{
@@ -91,7 +94,10 @@ func UserHandlerUpdateById(ctx *fiber.Ctx) error {
 
 	var user entity.User
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
-		return helpers.ErrorResponse(ctx, 404, "Not found")
+		if err == gorm.ErrRecordNotFound {
+			return helpers.ErrorResponse(ctx, 404, "User not found")
+		}
+		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
 	}
 
 	if err := database.DB.Model(&user).Updates(entity.User{
@@ -122,7 +128,10 @@ func UserHandlerUpdateEmail(ctx *fiber.Ctx) error {
 
 	var user entity.User
 	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
-		return helpers.ErrorResponse(ctx, 404, "User Not found")
+		if err == gorm.ErrRecordNotFound {
+			return helpers.ErrorResponse(ctx, 404, "User not found")
+		}
+		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
 	}
 
 	var userIsEmailExists entity.User
