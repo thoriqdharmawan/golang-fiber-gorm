@@ -14,11 +14,21 @@ import (
 func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	var users []entity.User
 
-	if err := database.DB.Find(&users).Error; err != nil {
+	limit := ctx.QueryInt("limit", 10)
+	offset := ctx.QueryInt("offset", 0)
+
+	if err := database.DB.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
 	}
 
-	return helpers.SuccessResponse(ctx, 200, users)
+	var total int64
+	if err := database.DB.Model(&entity.User{}).Count(&total).Error; err != nil {
+		return helpers.ErrorResponse(ctx, 500, "Internal Server Error")
+	}
+
+	meta := helpers.GenerateMetaData(total, limit, offset)
+
+	return helpers.SuccessResponseWithMeta(ctx, 200, users, meta)
 }
 
 func UserHandleCreate(ctx *fiber.Ctx) error {
