@@ -45,11 +45,23 @@ func UserHandleCreate(ctx *fiber.Ctx) error {
 		return helpers.ErrorResponse(ctx, 400, err.Error())
 	}
 
+	var userIsEmailExists entity.User
+	if result := database.DB.Where("email = ?", user.Email).First(&userIsEmailExists); result.Error == nil {
+		return helpers.ErrorResponse(ctx, fiber.StatusForbidden, "Email already exists")
+	}
+
+	hashedPassword, err := helpers.HashPassword(user.Password)
+
+	if err != nil {
+		return helpers.ErrorResponse(ctx, fiber.StatusInternalServerError, err.Error())
+	}
+
 	newUser := entity.User{
-		Name:    user.Name,
-		Email:   user.Email,
-		Address: user.Address,
-		Phone:   user.Phone,
+		Name:     user.Name,
+		Email:    user.Email,
+		Address:  user.Address,
+		Phone:    user.Phone,
+		Password: hashedPassword,
 	}
 
 	if err := database.DB.Create(&newUser).Error; err != nil {
@@ -78,6 +90,8 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
+		Address:   user.Address,
+		Phone:     user.Phone,
 	}
 
 	return helpers.SuccessResponse(ctx, 200, userResponse)

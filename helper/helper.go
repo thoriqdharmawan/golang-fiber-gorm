@@ -1,6 +1,9 @@
 package helpers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func ErrorResponse(ctx *fiber.Ctx, statusCode int, message string) error {
 	return ctx.Status(statusCode).JSON(fiber.Map{
@@ -35,4 +38,14 @@ func GenerateMetaData(total int64, limit int, offset int) fiber.Map {
 		"hasNextPage": hasNextPage,
 		"hasPrevPage": hasPrevPage,
 	}
+}
+
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
