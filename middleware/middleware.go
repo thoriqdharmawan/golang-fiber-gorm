@@ -7,10 +7,10 @@ import (
 )
 
 func Auth(ctx *fiber.Ctx) error {
-	token := ctx.Get("x-token")
-
-	if token != "secret" {
-		return utils.ErrorResponse(ctx, fiber.StatusUnauthorized, "Unauthorized")
+	token := ctx.Get("Authorization")
+	
+	if err := utils.VerifyJWTTokenHandler(token); err != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusUnauthorized, err.Error())
 	}
 
 	return ctx.Next()

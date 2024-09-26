@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"fmt"
 	"golang-fiber-gorm/model/entity"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -37,4 +39,51 @@ func GenerateJWTToken(user entity.User) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func VerifyJWTToken(tokenString string) (*Claims, error) {
+	// Parse the JWT token
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the signing method is HMAC-SHA256 (HS256)
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		// Return the secret key used for verification
+		return jwtSecretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if the token is valid and contains the claims
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, fmt.Errorf("invalid token")
+}
+
+// Function to verify JWT token and handle "Bearer" prefix
+func VerifyJWTTokenHandler(token string) error {
+	if token == "" {
+		return fmt.Errorf("missing authorization header")
+	}
+
+	// Step 2: Ensure token has the "Bearer " prefix
+	if !strings.HasPrefix(token, "Bearer ") {
+		return fmt.Errorf("invalid authorization header format")
+	}
+
+	// Step 3: Extract the token after "Bearer " (7 characters long)
+	tokenString := token[7:]
+
+	// Step 4: Verify the token
+	_, err := VerifyJWTToken(tokenString)
+
+	if err != nil {
+		return fmt.Errorf("invalid token")
+	}
+
+	return nil
 }
