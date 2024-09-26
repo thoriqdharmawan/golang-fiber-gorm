@@ -10,6 +10,9 @@ import (
 
 func Init(app *fiber.App) {
 	app.Static("/public", config.ProjectRootPath+"/public/asset/image1.avif")
+
+	app.Post("/login", handler.Login)
+
 	app.Get("/user", middleware.Auth, handler.UserHandlerGetAll)
 	app.Get("/user/:id", handler.UserHandlerGetById)
 	app.Post("/user", handler.UserHandleCreate)

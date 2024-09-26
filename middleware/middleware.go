@@ -15,4 +15,3 @@ func Auth(ctx *fiber.Ctx) error {
 
 	return ctx.Next()
 }
-
