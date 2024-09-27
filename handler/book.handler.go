@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"golang-fiber-gorm/database"
 	"golang-fiber-gorm/model/entity"
 	"golang-fiber-gorm/model/request"
@@ -31,22 +32,44 @@ func BookHandlerGetAll(ctx *fiber.Ctx) error {
 }
 
 func BookHandleCreate(ctx *fiber.Ctx) error {
-	book := new(request.BookCreateRequest)
+	title := ctx.FormValue("title")
+	author := ctx.FormValue("author")
+	file, errorFile := ctx.FormFile("cover")
 
-	if err := ctx.BodyParser(book); err != nil {
-		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, err.Error())
+	book := request.BookCreateRequest{
+		Title:  title,
+		Author: author,
+		Cover:  "",
 	}
 
 	validate := validator.New()
 
 	if err := validate.Struct(book); err != nil {
-		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, err.Error())
+		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid input: "+err.Error())
+	}
+
+	if errorFile != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, "Cover is required")
+	}
+
+	// 2mb
+	if file.Size > 2*1024*1024 {
+		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, "Cover size should not exceed 2MB")
+	}
+
+	// jpeg or png only
+	if file.Header.Get("Content-Type") != "image/jpeg" && file.Header.Get("Content-Type") != "image/png" {
+		return utils.ErrorResponse(ctx, fiber.StatusBadRequest, "Cover must be a JPEG or PNG image")
+	}
+
+	if err := ctx.SaveFile(file, fmt.Sprintf("./public/cover/%s", file.Filename)); err != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
 	newBook := entity.Book{
-		Title:  book.Title,
-		Author: book.Author,
-		Cover:  book.Cover,
+		Title:  title,
+		Author: author,
+		Cover:  file.Filename,
 	}
 
 	if err := database.DB.Create(&newBook).Error; err != nil {
