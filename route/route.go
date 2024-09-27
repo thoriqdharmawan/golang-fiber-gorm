@@ -19,7 +19,11 @@ func Init(app *fiber.App) {
 	app.Put("/user/:id", handler.UserHandlerUpdateById)
 	app.Put("/user/:id/update-email", handler.UserHandlerUpdateEmail)
 	app.Delete("/user/:id", handler.UserHandlerDeleteUserById)
+	app.Get("/user-post", handler.UserHandlerGetPosts)
 
 	app.Get("/book", handler.BookHandlerGetAll)
 	app.Post("/book", handler.BookHandleCreate)
+
+	app.Get("/post", handler.PostHandlerGetAllPost)
+	app.Post("/post", handler.PostHandlerCreate)
 }

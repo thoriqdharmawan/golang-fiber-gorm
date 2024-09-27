@@ -18,13 +18,13 @@ func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	limit := ctx.QueryInt("limit", 10)
 	offset := ctx.QueryInt("offset", 0)
 
-	if err := database.DB.Limit(limit).Offset(offset).Find(&users).Error; err != nil {
-		return utils.ErrorResponse(ctx, 500, "Internal Server Error")
+	if err := database.DB.Preload("Posts").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return utils.ErrorResponse(ctx, 500, "error query:"+err.Error())
 	}
 
 	var total int64
 	if err := database.DB.Model(&entity.User{}).Count(&total).Error; err != nil {
-		return utils.ErrorResponse(ctx, 500, "Internal Server Error")
+		return utils.ErrorResponse(ctx, 500, "error get count"+err.Error())
 	}
 
 	meta := utils.GenerateMetaData(total, limit, offset)
@@ -77,7 +77,7 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 
 	var user entity.User
 
-	if err := database.DB.Where("id = ?", userId).First(&user).Error; err != nil {
+	if err := database.DB.Preload("Posts").Where("id = ?", userId).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return utils.ErrorResponse(ctx, 404, "User not found")
 		}
@@ -92,6 +92,7 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 		UpdatedAt: user.UpdatedAt,
 		Address:   user.Address,
 		Phone:     user.Phone,
+		Posts:     user.Posts,
 	}
 
 	return utils.SuccessResponse(ctx, 200, userResponse)
@@ -177,4 +178,29 @@ func UserHandlerDeleteUserById(ctx *fiber.Ctx) error {
 	}
 
 	return utils.SuccessResponse(ctx, 200, user)
+}
+
+func UserHandlerGetPosts(ctx *fiber.Ctx) error {
+	var users []response.UserResponseGetPosts
+
+	limit := ctx.QueryInt("limit", 10)
+	offset := ctx.QueryInt("offset", 0)
+
+	if err := database.DB.Model(&entity.User{}).
+		Preload("Posts").
+		Limit(limit).
+		Offset(offset).
+		Find(&users).
+		Error; err != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, "error query: "+err.Error())
+	}
+
+	var total int64
+	if err := database.DB.Model(&entity.User{}).Count(&total).Error; err != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, "error get count"+err.Error())
+	}
+
+	meta := utils.GenerateMetaData(total, limit, offset)
+
+	return utils.SuccessResponseWithMeta(ctx, 200, users, meta)
 }
