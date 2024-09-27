@@ -5,6 +5,7 @@ import (
 	"golang-fiber-gorm/database/migration"
 	"golang-fiber-gorm/route"
 
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,6 +14,8 @@ func main() {
 	migration.RunMigration()
 
 	app := fiber.New()
+	app.Use(swagger.New())
+
 	route.Init(app)
 
 	app.Listen(":8080")
