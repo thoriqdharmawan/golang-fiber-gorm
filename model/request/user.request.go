@@ -17,3 +17,8 @@ type UserUpdateRequest struct {
 type UserEmailRequest struct {
 	Email string `json:"email" validate:"required"`
 }
+
+type UserSetLanguageRequest struct {
+	UserId     uint `json:"user_id" validate:"required"`
+	LanguageId uint `json:"language_id" validate:"required"`
+}

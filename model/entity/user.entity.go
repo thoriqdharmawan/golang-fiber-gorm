@@ -17,5 +17,5 @@ type User struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `json:"deleted_at" gorm:"index"`
 	Posts     []Post         `json:"-" gorm:"foreignKey:UserID"`
-	Language  []*Language    `json:"-" gorm:"many2many:user_languages;"`
+	Language  []Language     `json:"-" gorm:"many2many:user_languages;"`
 }

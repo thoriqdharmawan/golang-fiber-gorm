@@ -13,13 +13,14 @@ func Init(app *fiber.App) {
 
 	app.Post("/login", handler.Login)
 
-	app.Get("/user", middleware.Auth, handler.UserHandlerGetAll)
-	app.Get("/user/:id", handler.UserHandlerGetById)
+	app.Get("/user", handler.UserHandlerGetAll)
+	app.Get("/user/:id", middleware.Auth, handler.UserHandlerGetById)
 	app.Post("/user", handler.UserHandleCreate)
 	app.Put("/user/:id", handler.UserHandlerUpdateById)
 	app.Put("/user/:id/update-email", handler.UserHandlerUpdateEmail)
 	app.Delete("/user/:id", handler.UserHandlerDeleteUserById)
 	app.Get("/user-post", handler.UserHandlerGetPosts)
+	app.Post("/user-set-language", handler.UserSetLanguage)
 
 	app.Get("/book", handler.BookHandlerGetAll)
 	app.Post("/book", handler.BookHandleCreate)
