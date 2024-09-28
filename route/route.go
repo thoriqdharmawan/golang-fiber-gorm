@@ -26,4 +26,7 @@ func Init(app *fiber.App) {
 
 	app.Get("/post", handler.PostHandlerGetAllPost)
 	app.Post("/post", handler.PostHandlerCreate)
+
+	app.Get("/language", handler.LanguageHandlerGetAll)
+	app.Post("/language", handler.LanguageHandlerCreate)
 }

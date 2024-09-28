@@ -204,3 +204,27 @@ func UserHandlerGetPosts(ctx *fiber.Ctx) error {
 
 	return utils.SuccessResponseWithMeta(ctx, 200, users, meta)
 }
+
+// func UserSetLanguage(c *fiber.Ctx) error {
+//     studentID := c.Params("studentID")
+//     courseID := c.Params("courseID")
+
+//     var student Student
+//     var course Course
+
+//     // Cari student dan course
+//     if err := database.DB.First(&student, studentID).Error; err != nil {
+//         return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Student not found"})
+//     }
+
+//     if err := database.DB.First(&course, courseID).Error; err != nil {
+//         return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Course not found"})
+//     }
+
+//     // Tambahkan course ke student
+//     if err := database.DB.Model(&student).Association("Courses").Append(&course); err != nil {
+//         return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+//     }
+
+//     return c.JSON(fiber.Map{"message": "Enrolled successfully"})
+// }
