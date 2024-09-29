@@ -2,7 +2,9 @@ package database
 
 import (
 	"fmt"
+	"os"
 
+	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -10,7 +12,10 @@ import (
 var DB *gorm.DB
 
 func Connect() {
-	db, err := gorm.Open(mysql.Open("root:root@tcp(localhost:3306)/golang_fiber_gorm?charset=utf8mb4&parseTime=True&loc=Local"), &gorm.Config{})
+	godotenv.Load(".env")
+	dbURL := os.Getenv("DATABASE_URL")
+
+	db, err := gorm.Open(mysql.Open(dbURL), &gorm.Config{})
 
 	if err != nil {
 		panic(err.Error())

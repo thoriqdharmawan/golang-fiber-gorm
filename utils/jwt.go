@@ -3,13 +3,13 @@ package utils
 import (
 	"fmt"
 	"golang-fiber-gorm/model/entity"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 )
-
-var jwtSecretKey = []byte("secret_key")
 
 type Claims struct {
 	User entity.User
@@ -17,6 +17,9 @@ type Claims struct {
 }
 
 func GenerateJWTToken(user entity.User) (string, error) {
+	godotenv.Load(".env")
+	var jwtSecretKey = []byte(os.Getenv("JWT_SECRET"))
+
 	// Define token expiration time (e.g., 1 hour)
 	expirationTime := time.Now().Add(1 * time.Hour)
 
@@ -42,6 +45,9 @@ func GenerateJWTToken(user entity.User) (string, error) {
 }
 
 func VerifyJWTToken(tokenString string) (*Claims, error) {
+	godotenv.Load(".env")
+	var jwtSecretKey = []byte(os.Getenv("JWT_SECRET"))
+
 	// Parse the JWT token
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		// Ensure the signing method is HMAC-SHA256 (HS256)
