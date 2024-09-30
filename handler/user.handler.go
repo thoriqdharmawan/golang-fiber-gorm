@@ -18,7 +18,7 @@ func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	limit := ctx.QueryInt("limit", 10)
 	offset := ctx.QueryInt("offset", 0)
 
-	if err := database.DB.Preload("Posts").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := database.DB.Preload("Languages").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
 		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, "error query:"+err.Error())
 	}
 
@@ -32,6 +32,7 @@ func UserHandlerGetAll(ctx *fiber.Ctx) error {
 	return utils.SuccessResponseWithMeta(ctx, fiber.StatusOK, users, meta)
 }
 
+// TODO: implement create user with language
 func UserHandleCreate(ctx *fiber.Ctx) error {
 	user := new(request.UserCreateRequest)
 
@@ -56,12 +57,18 @@ func UserHandleCreate(ctx *fiber.Ctx) error {
 		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, err.Error())
 	}
 
+	var languages []entity.Language
+	if err := database.DB.Where("id IN ?", user.Languages).Find(&languages).Error; err != nil {
+		return utils.ErrorResponse(ctx, fiber.StatusInternalServerError, "Error finding languages")
+	}
+
 	newUser := entity.User{
-		Name:     user.Name,
-		Email:    user.Email,
-		Address:  user.Address,
-		Phone:    user.Phone,
-		Password: hashedPassword,
+		Name:      user.Name,
+		Email:     user.Email,
+		Address:   user.Address,
+		Phone:     user.Phone,
+		Password:  hashedPassword,
+		Languages: languages,
 	}
 
 	if err := database.DB.Create(&newUser).Error; err != nil {
@@ -76,7 +83,7 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 
 	var user entity.User
 
-	if err := database.DB.Preload("Posts").Preload("Language").Where("id = ?", userId).First(&user).Error; err != nil {
+	if err := database.DB.Preload("Posts").Preload("Languages").Where("id = ?", userId).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return utils.ErrorResponse(ctx, fiber.StatusNotFound, "User not found")
 		}
@@ -92,7 +99,7 @@ func UserHandlerGetById(ctx *fiber.Ctx) error {
 		Address:   user.Address,
 		Phone:     user.Phone,
 		Posts:     user.Posts,
-		Language:  user.Language,
+		Languages: user.Languages,
 	}
 
 	return utils.SuccessResponse(ctx, 200, userResponse)

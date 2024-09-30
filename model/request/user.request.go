@@ -1,11 +1,12 @@
 package request
 
 type UserCreateRequest struct {
-	Name     string `json:"name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-	Address  string `json:"address"`
-	Phone    string `json:"phone"`
+	Name      string `json:"name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required"`
+	Address   string `json:"address"`
+	Phone     string `json:"phone"`
+	Languages []uint `json:"languages"`
 }
 
 type UserUpdateRequest struct {

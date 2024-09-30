@@ -29,7 +29,7 @@ type UserResponseById struct {
 	Address   string            `json:"address"`
 	Phone     string            `json:"phone"`
 	Posts     []entity.Post     `json:"posts"`
-	Language  []entity.Language `json:"languages"`
+	Languages []entity.Language `json:"languages"`
 }
 
 type UserResponseGetPosts struct {
